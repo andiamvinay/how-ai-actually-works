@@ -222,7 +222,7 @@ dialog ul{margin:.25rem 0;padding-left:1.2rem;color:var(--ink-2)}
 /* M6 attention */
 .sent{display:flex;flex-wrap:wrap;gap:.35rem;margin:.5rem 0 1rem}
 .wtok{border:2px solid var(--line);border-radius:var(--radius-sm);padding:.3rem .6rem;background:var(--card-2);position:relative;color:var(--ink)}
-.wtok.q{border-color:var(--select);box-shadow:0 0 0 2px var(--select) inset}
+.wtok.qsel{border-color:var(--select);box-shadow:0 0 0 2px var(--select) inset}
 .wtok.masked{opacity:.35}
 .wtok .w{position:absolute;inset:0;border-radius:.35rem;background:var(--bright-indigo);pointer-events:none}
 .wtok span{position:relative}
@@ -355,6 +355,32 @@ mark.inj{background:var(--bad-bg);color:var(--ink);outline:2px solid var(--bad-l
 .evt{width:100%;border-collapse:collapse;margin-top:1rem;font-size:.88rem}
 .evt th,.evt td{text-align:left;padding:.5rem .6rem;border-bottom:2px solid var(--line)}
 .evt td.ok{color:var(--ink)}.evt td.bad{background:var(--bad-bg)}.evt td.warn{background:rgba(251,191,36,.15)}
+
+/* ===== v4.1 make it stick ===== */
+.stick{margin:2rem 0}
+.stick>h2{font-size:1.5rem;letter-spacing:-.01em;margin:0 0 1rem}
+.stick-card{background:var(--card);border:2px solid var(--line);border-radius:var(--radius-md);padding:1.25rem 1.4rem;margin:0 0 1rem;box-shadow:var(--shadow-md)}
+.stick-card h3{font-size:1.1rem;margin:0 0 .5rem}
+.stick-card p{margin:.5rem 0;color:var(--ink-2);max-width:44rem}
+.stick-card p b,.stick-card td b{color:var(--ink)}
+.stick-card code{font-family:var(--font-mono);font-size:.88em;background:var(--card-2);border:2px solid var(--line);padding:.05rem .35rem;border-radius:.4rem}
+.stick-steps{margin:.5rem 0;padding-left:1.3rem;color:var(--ink-2)}.stick-steps li{margin:.25rem 0}
+.maptbl{width:100%;border-collapse:collapse;margin-top:.75rem;font-size:.92rem}
+.maptbl th{text-align:left;font-size:.8rem;color:var(--ink-3);font-weight:600;padding:.4rem .6rem;border-bottom:2px solid var(--line)}
+.maptbl td{padding:.5rem .6rem;border-bottom:2px solid var(--line);color:var(--ink-2);vertical-align:top}
+.maptbl tr:last-child td{border-bottom:none}
+.wsteps{list-style:none;padding:0;margin:.75rem 0 1rem;display:grid;gap:.5rem}
+.wsteps li{border:2px solid var(--line);border-radius:var(--radius-sm);padding:.65rem .85rem;background:var(--card-2)}
+.wsteps li.now{border-color:var(--ok-line);background:var(--ok-bg)}
+.wsteps li b{display:block;font-size:.9rem}
+.wsteps li p{margin:.35rem 0 0;font-size:.9rem}
+.wcalc{font-family:var(--font-mono);font-size:.84rem;margin:.35rem 0 0;white-space:pre-wrap;word-break:break-word;color:var(--ink)}
+.wbar{position:relative;display:flex;align-items:center;height:1.4rem;margin-top:.45rem;border-radius:var(--radius-full);background:var(--card);border:2px solid var(--line);overflow:hidden}
+.wbar span{position:absolute;inset:0 auto 0 0;background:var(--warn);border-radius:inherit;transition:width .3s}
+.wbar small{position:relative;padding-left:.6rem;font-size:.75rem;line-height:1;color:var(--ink)}
+.stick-key,.stick-one{max-width:44rem;margin:.75rem 0;padding:.85rem 1.1rem;border-radius:var(--radius-sm);background:var(--card-2);border:2px solid var(--line);color:var(--ink-2)}
+.stick-key b,.stick-one b{color:var(--ink)}
+.stick-one{border-left:4px solid var(--teal)}
 @media (max-width:860px){.cols3,.agent-grid,.mcp-grid{grid-template-columns:1fr}.ev{grid-template-columns:1fr}.ev .row{grid-column:1}.caps{grid-template-columns:1fr}}
 
 /* ===== v4 ===== */
@@ -1164,8 +1190,12 @@ const Cost = {
 };
 
 /* ===== App core ===== */
-const APP_VERSION = '4.0.0';
+const APP_VERSION = '4.1.0';
 const CHANGELOG = [
+  {v:'4.1.0', date:'28 Oct 2026', notes:[
+    'New "Make it stick" section in all 29 learning modules: an everyday analogy, a table mapping it to the AI concept, a worked example you step through with real numbers, a key distinction and a one-sentence summary.',
+    'How machines learn now walks through gradient descent as a hill in fog, with a prediction moving from 8 toward 4 step by step.'
+  ]},
   {v:'4.0.0', date:'27 Oct 2026', notes:[
     'Eight new modules: the math you need, ML fundamentals, inside a transformer block, adapting models, vector search internals, serving at scale, AI system design, and an interview drill.',
     'Interview prep panel on all 29 learning modules: a 60-second explanation to say out loud and three practice questions with model answers.',
@@ -1270,6 +1300,7 @@ function render(n, {focus=true}={}){
       <h1 tabindex="-1">${esc(meta.title)}</h1>
     </header>
     <div class="prose">${mod.intro}</div>
+    ${typeof stickHtml==="function"?stickHtml(mod.stick):""}
     <section class="card" aria-label="Interactive">
       <p class="hint"><b>Try it</b><span>${mod.hint}</span></p>
       <div class="mount"></div>
@@ -1285,6 +1316,7 @@ function render(n, {focus=true}={}){
                     :`<button class="btn" disabled title="Arrives in v${next.ver}"><span class="lbl">Next, in v${next.ver}</span>${esc(next.title)}</button>`):'<span></span>'}
     </nav>
     <p class="kbd">Use the left and right arrow keys to move between modules.</p>`;
+  try { if(typeof wireStick==='function') wireStick(view, mod.stick); } catch(e){ console.error(e); }
   try { mod.mount($('.mount', view), ctx); }
   catch(e){ $('.mount', view).innerHTML = `<p class="msg">This interactive failed to load: ${esc(e.message)}</p>`; console.error(e); }
   renderQuiz(n, $('.qz', view));
@@ -1750,7 +1782,7 @@ MODULES[6] = {
       const toks=Attn.tokens(last), n=toks.length;
       const rows=toks.map((_,i)=>Attn.row(head,i,toks,last,causal));
       const row=rows[qi];
-      sent.innerHTML=toks.map((t,j)=>`<button class="wtok${j===qi?' q':''}${causal&&j>qi?' masked':''}" data-j="${j}"><i class="w" style="opacity:${(row[j]*0.9).toFixed(3)}"></i><span style="${row[j]>.45?'color:#fff':''}">${esc(t)}</span></button>`).join('');
+      sent.innerHTML=toks.map((t,j)=>`<button class="wtok${j===qi?' qsel':''}${causal&&j>qi?' masked':''}" data-j="${j}"><i class="w" style="opacity:${(row[j]*0.9).toFixed(3)}"></i><span style="${row[j]>.45?'color:#fff':''}">${esc(t)}</span></button>`).join('');
       const top=row.map((w,j)=>[w,j]).sort((a,b)=>b[0]-a[0]).slice(0,3);
       $('[data-top]',el).innerHTML=`Query <b>${esc(toks[qi])}</b> attends most to ${top.map(([w,j])=>`<b>${esc(toks[j])}</b> ${Math.round(w*100)}%`).join(', ')}.`+
         (head==='coref'&&qi===7&&causal?' With the causal mask on, "it" cannot see the last word yet, so it hedges between animal and street. The model resolves it later, when the last word looks back.':'')+
@@ -2295,7 +2327,7 @@ MODULES[14] = {
       <p class="muted" style="font-size:.85rem;margin:0">Parameter counts use a Mixtral-like split: about 1.6B shared (attention, embeddings) plus 8 experts of about 5.6B each. Expert specialties are labeled for teaching. Real experts specialize in less tidy ways.</p>`;
     const draw=()=>{
       const r=MoE.route(sel,k);
-      $('[data-toks]',el).innerHTML=MoE.SENT.map(([t],i)=>`<button class="wtok${i===sel?' q':''}" data-i="${i}" style="${routed.has(i)?'':'opacity:.85'}"><span>${esc(t)}</span></button>`).join('');
+      $('[data-toks]',el).innerHTML=MoE.SENT.map(([t],i)=>`<button class="wtok${i===sel?' qsel':''}" data-i="${i}" style="${routed.has(i)?'':'opacity:.85'}"><span>${esc(t)}</span></button>`).join('');
       const mxL=Math.max(1,...loads);
       $('[data-ex]',el).innerHTML=MoE.EXPERTS.map((name,e)=>{ const on=r.top.indexOf(e); return `<div class="expert${on>=0?' on':''}"><b>Expert ${e+1}</b><span>${name}</span>
         <div class="meter thin"><span style="width:${(r.p[e]*100).toFixed(1)}%"></span></div><small class="num">router ${Math.round(r.p[e]*100)}%${on>=0?`, gate ${Math.round(r.gates[on]*100)}%`:''}</small>
@@ -3383,6 +3415,312 @@ MODULES[30] = {
   ],
   interview:null
 };
+/* ===== "Make it stick": analogy, mapping table, worked example, key distinction, one-liner ===== */
+const STICK = {
+1:{analogy:{title:'a kitchen',story:'Think of every way a meal can get made. A cook following a recipe card someone wrote is <b>rule-based AI</b>. A cook who learned by tasting thousands of dishes and noticing what works is <b>machine learning</b>. A chef with many layers of intuition who can start from raw ingredients is <b>deep learning</b>. A chef who invents a brand-new dish is <b>generative AI</b>.'},
+ map:[['Recipe card written by a person','Rule-based AI'],['Learning by tasting thousands of dishes','Machine learning from data'],['Layers of intuition, starting from raw ingredients','Deep learning on raw pixels, audio or text'],['Inventing a new dish','Generative AI']],
+ example:{title:'four ways to handle one email',intro:'The same inbox, handled by each kind of AI.',steps:[
+  {t:'Rule-based',calc:'if subject contains "FREE $$$" → spam',note:'Fast and predictable, but spammers just change the wording.'},
+  {t:'Machine learning',calc:'train on 10,000 labeled emails → P(spam) = 0.93',note:'It learned that words like "winner" and "urgent" raise the odds. Nobody wrote that rule.'},
+  {t:'Deep learning',calc:'raw text and images in → spam or not',note:'It can catch spam hidden in an image of text, where no hand-written feature would help.'},
+  {t:'Generative AI',calc:'"Draft a polite reply to this customer"',note:'It doesn\'t label anything. It writes something new.'}]},
+ distinction:'Machine learning predicts a label or number from patterns. Generative AI produces new content. Both learn from data.',
+ oneLiner:'AI is the goal, machine learning is learning it from data, deep learning does that with many-layer networks, and generative AI uses them to create.'},
+23:{analogy:{title:'comparing movie tastes',story:'You and a friend each rate five movies. Multiply your ratings movie by movie and add them up: a big number means your tastes agree. That is a <b>dot product</b>. Divide out how strongly each of you rates things in general, and you get pure agreement of taste, which is <b>cosine similarity</b>. A <b>matrix</b> is a recipe that turns one list of numbers into another. <b>Softmax</b> turns raw scores into percentages that add up to 100. The <b>chain rule</b> tracks how a change ripples through several steps.'},
+ map:[['A list of ratings','Vector'],['How much two lists agree','Dot product'],['Agreement in taste, ignoring enthusiasm','Cosine similarity'],['A recipe from ingredients to dish','Matrix multiplication'],['Turning scores into percentages','Softmax'],['How a change ripples through steps','Chain rule and gradients']],
+ example:{title:'dot product, cosine and softmax by hand',intro:'Two small vectors, then three scores turned into probabilities.',steps:[
+  {t:'Dot product',calc:'a = [2, 1], b = [1, 3]   a·b = 2×1 + 1×3 = 5'},
+  {t:'Lengths',calc:'|a| = √(4+1) = 2.236   |b| = √(1+9) = 3.162'},
+  {t:'Cosine similarity',calc:'5 ÷ (2.236 × 3.162) = 0.707   → 45° apart',note:'1 means same direction, 0 unrelated, −1 opposite.'},
+  {t:'Softmax of scores [2, 1, 0]',calc:'e² = 7.389, e¹ = 2.718, e⁰ = 1   sum = 11.107\n→ [0.665, 0.245, 0.090]',note:'Always positive, always sums to 1.'},
+  {t:'Loss if the first option was right',calc:'−ln(0.665) = 0.408',note:'Had it been the third option: −ln(0.090) = 2.41. Low probability on the truth means high loss.'}]},
+ distinction:'A dot product depends on both direction and length. Cosine similarity keeps only direction.',
+ oneLiner:'Vectors hold meaning, matrices transform it, softmax turns scores into probabilities, and the chain rule tells training which way to nudge every weight.'},
+2:{analogy:{title:'walking down a hill in fog',story:'You are standing on a hill in thick fog, trying to reach the lowest point, but you can\'t see it. So you follow a simple routine:',steps:['Feel which way the ground slopes downward.','Take a small step in that direction.','Check the slope again.','Repeat until the ground is flat.'],after:'That is gradient descent.'},
+ map:[['Your position','Model parameters (weights)'],['Height of the hill','Prediction error (loss)'],['Direction of the slope','Gradient'],['Size of your step','Learning rate'],['Bottom of the hill','Minimum loss']],
+ example:{title:'watch a model learn',intro:'The correct answer is 4, but the model\'s first prediction is 8. Loss is squared error, L = (p − 4)², so the gradient is 2(p − 4). Learning rate α = 0.25.',bar:'Squared error',steps:[
+  {t:'Step 1',calc:'p = 8   L = 16   gradient = 8   p ← 8 − 0.25×8 = 6',bar:16},
+  {t:'Step 2',calc:'p = 6   L = 4   gradient = 4   p ← 6 − 0.25×4 = 5',bar:4},
+  {t:'Step 3',calc:'p = 5   L = 1   gradient = 2   p ← 5 − 0.25×2 = 4.5',bar:1},
+  {t:'Step 4',calc:'p = 4.5   L = 0.25   gradient = 1   p ← 4.25',bar:.25},
+  {t:'Step 5',calc:'p = 4.25   L = 0.0625   gradient = 0.5   p ← 4.125',bar:.0625},
+  {t:'Step 6',calc:'p = 4.125   L = 0.0156   gradient = 0.25   p ← 4.0625   (error now 0.0039)',bar:.0039,note:'Each step halves the distance to 4. Steps shrink on their own because the gradient shrinks near the bottom.'}]},
+ extra:[['What the gradient tells you','A positive gradient means decrease the parameter. A negative gradient means increase it. A gradient near zero means flat ground, possibly the minimum. The update rule is <code>w_new = w_old − α × dL/dw</code>.'],
+        ['Why the learning rate matters','With α = 1.0 in the example above, p jumps from 8 to 0 and back to 8 forever. With α = 1.25 it overshoots further each time and diverges. Too small and it takes thousands of steps.']],
+ real:'Training an LLM runs this loop billions of times. Predict the next token, measure how wrong it was, use backpropagation to get the gradient for every weight, update the weights with an optimizer such as AdamW, and repeat across trillions of tokens.',
+ distinction:'Backpropagation calculates how much each weight contributed to the error. Gradient descent uses that to decide how to change the weights.',
+ oneLiner:'Gradient descent improves a model by repeatedly nudging its parameters a small step in the direction that reduces error.'},
+3:{analogy:{title:'a hiring committee',story:'Each interviewer weighs factors like experience and skills, adds their own leaning, and only speaks up if the total is convincing. First-round interviewers pass their verdicts to a second round, which makes the final call. After seeing how hires actually turn out, each interviewer adjusts how much they trust each factor.'},
+ map:[['An interviewer','Neuron'],['How much they care about each factor','Weights'],['Their personal leaning','Bias'],['Only voicing a strong opinion','Activation function (ReLU)'],['Interview rounds','Layers'],['Adjusting trust after seeing outcomes','Training with gradient descent']],
+ example:{title:'one neuron, then a second layer',intro:'Inputs x = [2, 3], weights w = [0.5, −1], bias b = 1, activation ReLU.',steps:[
+  {t:'Weighted sum',calc:'z = 0.5×2 + (−1)×3 + 1 = 1 − 3 + 1 = −1'},
+  {t:'Activation',calc:'ReLU(−1) = max(0, −1) = 0',note:'The neuron stays silent.'},
+  {t:'Training changes one weight',calc:'w = [0.5, +1]   z = 1 + 3 + 1 = 5   ReLU(5) = 5',note:'Same inputs, different weight, so it now fires.'},
+  {t:'Output layer',calc:'out = sigmoid(0.4 × 5) = sigmoid(2) = 0.881',note:'An 88% "yes". A real network repeats this across millions of neurons.'}]},
+ real:'Every layer in an LLM is this same multiply, add and activate, done as one big matrix multiply over thousands of neurons at once.',
+ distinction:'Weights are learned from data. The architecture, meaning how many layers and how wide, is chosen by people.',
+ oneLiner:'A neural network is layers of simple weighted sums with nonlinear switches, tuned by training until the outputs are right.'},
+24:{analogy:{title:'studying for an exam',story:'Textbook exercises are what you practice on. A mock exam tells you whether you are ready. The real exam has questions you have never seen. Memorizing last year\'s answers gets you full marks on that paper and fails you on the real one. That is <b>overfitting</b>. Not studying enough fails both. That is <b>underfitting</b>.'},
+ map:[['Textbook exercises','Training set'],['Mock exam to tune your study plan','Validation set'],['The real exam, seen once','Test set'],['Memorizing answers','Overfitting'],['Not studying enough','Underfitting'],['Studying concepts, not answers','Regularization and more data']],
+ example:{title:'scoring a spam filter',intro:'100 emails, 20 of them spam. The filter flags 25.',steps:[
+  {t:'Count the outcomes',calc:'caught spam (TP) = 18   wrongly flagged (FP) = 7\nmissed spam (FN) = 2   correctly ignored (TN) = 73'},
+  {t:'Precision',calc:'18 ÷ 25 = 0.72',note:'When it says spam, it is right 72% of the time.'},
+  {t:'Recall',calc:'18 ÷ 20 = 0.90',note:'It catches 90% of all spam.'},
+  {t:'F1 and accuracy',calc:'F1 = 2 × 0.72 × 0.90 ÷ 1.62 = 0.80   accuracy = 91 ÷ 100 = 0.91'},
+  {t:'Raise the threshold',calc:'flags 15, 14 real spam → precision 0.93, recall 0.70',note:'Fewer false alarms, more missed spam. The threshold is a product decision.'}]},
+ distinction:'Precision asks "when it says yes, is it right?" Recall asks "of all the real yeses, how many did it find?"',
+ oneLiner:'Judge a model on data it has never seen, and pick the metric that matches the mistake you can least afford.'},
+4:{analogy:{title:'a shorthand stenographer',story:'A stenographer has one squiggle for each common word like "the", and writes rare words as several shorter pieces. The squiggle dictionary was built by noticing which letter combinations show up most. Now imagine being billed per squiggle.'},
+ map:[['The squiggle dictionary','Vocabulary'],['One squiggle','One token'],['A rare word in pieces','Subword split'],['The squiggle\'s number in the dictionary','Token ID'],['Billed per squiggle','Priced per token']],
+ example:{title:'building a BPE vocabulary',intro:'A tiny corpus: "low" ×5, "lower" ×2, "newest" ×6, "widest" ×3. Start from single letters and merge the most frequent adjacent pair each round.',steps:[
+  {t:'Merge 1',calc:'"e"+"s" appears 9 times (newest, widest) → new token "es"'},
+  {t:'Merge 2',calc:'"es"+"t" appears 9 times → "est"'},
+  {t:'Merge 3',calc:'"l"+"o" appears 7 times (low, lower) → "lo"'},
+  {t:'Merge 4',calc:'"lo"+"w" appears 7 times → "low"'},
+  {t:'Tokenize a new word',calc:'"lowest" → "low" + "est"   (2 tokens)',note:'"lowest" never appeared, yet it splits into meaningful pieces. Real tokenizers run tens of thousands of merges.'}]},
+ distinction:'Tokens are not words. English averages about 1.3 tokens per word, and other languages and code often take more.',
+ oneLiner:'A tokenizer chops text into frequent chunks with integer IDs, and everything from cost to quirks follows from that.'},
+5:{analogy:{title:'a well-organized grocery store',story:'Apples sit next to bananas, milk next to yogurt. Every product has a spot, and walking along an aisle changes one quality steadily: fruit to vegetables, or fresh to frozen. You can find something similar to what you hold just by looking nearby.'},
+ map:[['The store layout','Embedding space'],['A product\'s shelf coordinates','Its vector'],['Nearby shelves','Similar meaning'],['Walking along an aisle','A feature direction, like royalty or gender'],['How directly two items line up from the entrance','Cosine similarity']],
+ example:{title:'king − man + woman by hand',intro:'Three made-up features per word: [royal, masculine, person].',steps:[
+  {t:'The vectors',calc:'king = [0.9, 0.9, 1]   queen = [0.9, −0.9, 1]\nman = [0.1, 0.9, 1]   woman = [0.1, −0.9, 1]'},
+  {t:'king − man',calc:'[0.8, 0, 0]',note:'Removing "man" leaves pure royalty.'},
+  {t:'+ woman',calc:'[0.8, 0, 0] + [0.1, −0.9, 1] = [0.9, −0.9, 1]  = queen'},
+  {t:'Similarity check',calc:'cos(king, man) = 1.9 ÷ (1.619 × 1.349) = 0.87',note:'Real embeddings learn hundreds of such directions on their own. Nobody labels them.'}]},
+ distinction:'A token ID is just a label. An embedding is a learned position where distance means something.',
+ oneLiner:'Embeddings turn meaning into coordinates, so "similar" becomes "close" and relationships become directions.'},
+6:{analogy:{title:'a meeting where everyone wears a name tag',story:'Each word walks into the meeting with a question it wants answered, a name tag describing what it knows, and a folder of information to share. It listens most to the people whose name tags match its question, and leaves with notes that blend what they said.'},
+ map:[['The question you bring','Query (Q)'],['A person\'s name tag','Key (K)'],['What they tell you','Value (V)'],['How well a tag matches your question','Q·K score'],['Splitting your attention into percentages','Softmax weights'],['The notes you leave with','Attention output']],
+ example:{title:'one attention step by hand',intro:'Query for "it" q = [1, 0]. Keys: animal [2, 1], street [0, 2], was [1, 0]. Dimension d = 2.',steps:[
+  {t:'Scores',calc:'q·k = 2, 0, 1'},
+  {t:'Scale by √d',calc:'÷ 1.414 → 1.414, 0, 0.707'},
+  {t:'Softmax',calc:'→ animal 0.576, street 0.140, was 0.284',note:'"it" listens mostly to "animal".'},
+  {t:'Mix the values',calc:'values: animal [1, 0], street [0, 1], was [0.5, 0.5]\n0.576×[1,0] + 0.140×[0,1] + 0.284×[0.5,0.5] = [0.718, 0.282]',note:'The new vector for "it" now carries information from "animal".'}]},
+ distinction:'Query and key decide who to listen to. The value is what actually gets passed along.',
+ oneLiner:'Attention lets each token look at the others, decide which matter, and blend in their information.'},
+25:{analogy:{title:'a document passed down an assembly line',story:'Every station does the same two things. First a group discussion, where everyone reads everyone else\'s part. Then each worker thinks on their own about their own part. Both write their notes in the margin instead of erasing the page, and someone resets the volume before each step so no voice drowns the rest out.'},
+ map:[['The document passed along','Residual stream'],['Group discussion','Attention'],['Thinking on your own','Feed-forward network'],['Writing in the margin, never erasing','Residual connection'],['Resetting the volume','Layer norm'],['32 identical stations','32 layers']],
+ example:{title:'counting GPT-2 small\'s parameters',intro:'d_model = 768, 12 layers, feed-forward width 3,072, vocabulary 50,257.',steps:[
+  {t:'Attention per layer',calc:'4 × 768² = 2,359,296   (Q, K, V and output matrices)'},
+  {t:'Feed-forward per layer',calc:'2 × 768 × 3,072 = 4,718,592'},
+  {t:'All 12 layers',calc:'12 × 7,077,888 ≈ 84.9 M'},
+  {t:'Embeddings',calc:'50,257 × 768 ≈ 38.6 M   + positions 1,024 × 768 ≈ 0.8 M'},
+  {t:'Total',calc:'≈ 124 M parameters',note:'That matches the published size. About two thirds of each layer is the feed-forward part.'}]},
+ distinction:'Attention moves information between tokens. The feed-forward network transforms each token on its own.',
+ oneLiner:'A transformer is the same attention-then-feed-forward block stacked dozens of times, with residuals keeping the signal flowing.'},
+7:{analogy:{title:'training a new chef',story:'First they read every cookbook ever written. They know a lot but ramble, and might answer "how do I make soup" with a history of soup. Next comes an apprenticeship, where a head chef shows exactly how good dishes are plated. Finally, diners taste two versions of a dish and pick one, and the chef learns what people actually prefer.'},
+ map:[['Reading every cookbook','Pretraining on next-token prediction'],['Apprenticeship with example plates','Supervised fine-tuning'],['Diners picking the better dish','Preference tuning (RLHF or RLAIF)'],['How surprised the chef is by the real recipe','Cross-entropy loss']],
+ example:{title:'one training step on one word',intro:'Training text: "The cat sat on the mat".',steps:[
+  {t:'Predict',calc:'P(mat) = 0.31, P(floor) = 0.18, P(couch) = 0.12, …'},
+  {t:'Score it',calc:'loss = −ln(0.31) = 1.17'},
+  {t:'Backpropagate',calc:'gradients push the "mat" score up and the others down'},
+  {t:'After many updates',calc:'P(mat) = 0.60 → loss = −ln(0.60) = 0.51'},
+  {t:'Compare a bad guess',calc:'P(mat) = 0.01 → loss = 4.61',note:'Pretraining repeats this for trillions of tokens.'}]},
+ distinction:'Pretraining gives the model knowledge. Post-training gives it behavior.',
+ oneLiner:'An LLM learns by predicting the next token over and over, and is then taught to follow instructions and match human preferences.'},
+26:{analogy:{title:'getting a new hire productive',story:'You can give clear instructions in an email (<b>prompting</b>). You can hand them the reference binder to look things up (<b>RAG</b>). You can send them on a course that changes their habits (<b>fine-tuning</b>). Or a senior expert can train a cheaper junior to do one job well (<b>distillation</b>). <b>LoRA</b> is adding sticky notes to the manual instead of rewriting it.'},
+ map:[['Instructions in an email','Prompting'],['The reference binder','RAG'],['A training course','Fine-tuning'],['Senior expert trains a junior','Distillation'],['Sticky notes on the manual','LoRA adapters']],
+ example:{title:'how small LoRA really is',intro:'Llama 2 7B: d_model 4,096, 32 layers. Apply LoRA with rank 8 to the query and value matrices.',steps:[
+  {t:'One full matrix',calc:'4,096 × 4,096 = 16.8 M weights'},
+  {t:'One LoRA adapter',calc:'A (4,096 × 8) + B (8 × 4,096) = 65,536   → 0.39% of the matrix'},
+  {t:'Whole model',calc:'65,536 × 2 matrices × 32 layers = 4.2 M trainable   vs 6.7 B total (0.06%)'},
+  {t:'Memory',calc:'full fine-tune ≈ 16 bytes × 6.7 B ≈ 108 GB\nQLoRA: frozen 4-bit base ≈ 3.4 GB + tiny adapters',note:'That is why LoRA and QLoRA fit on one GPU.'}]},
+ distinction:'RAG gives a model knowledge at question time. Fine-tuning changes how it behaves.',
+ oneLiner:'Try prompting first, add RAG for knowledge, and fine-tune only for behavior that prompts can\'t fix.'},
+8:{analogy:{title:'picking a restaurant from friends\' votes',story:'Greedy always goes to the top-voted place. Temperature is how adventurous you feel tonight. Top-k only considers the five most-voted places. Top-p keeps adding places until they cover 90% of the votes. Beam search plans the whole evening several ways and keeps the best overall plan.'},
+ map:[['Friends\' votes','Probability distribution'],['Always the top pick','Greedy decoding'],['How adventurous you feel','Temperature'],['Only the top 5','Top-k'],['Places covering 90% of votes','Top-p (nucleus)'],['Planning the whole evening','Beam search']],
+ example:{title:'reshaping three choices',intro:'Next-token scores (logits): sunny 2.0, cloudy 1.0, purple 0.1.',steps:[
+  {t:'Temperature 1',calc:'→ sunny 0.659, cloudy 0.242, purple 0.099'},
+  {t:'Temperature 0.5',calc:'divide by 0.5 → [4, 2, 0.2] → 0.864, 0.117, 0.019',note:'Sharper: the favorite dominates.'},
+  {t:'Temperature 2',calc:'divide by 2 → [1, 0.5, 0.05] → 0.502, 0.304, 0.194',note:'Flatter: "purple" now comes up about one time in five.'},
+  {t:'Top-p 0.9 at temperature 1',calc:'0.659 + 0.242 = 0.901 ≥ 0.9 → keep sunny and cloudy\nrenormalize → 0.731, 0.269',note:'"purple" is cut entirely.'}]},
+ distinction:'Decoding changes how you pick from the model\'s probabilities. It never changes the model.',
+ oneLiner:'Decoding turns probabilities into words: low temperature for reliable answers, controlled randomness for creative ones.'},
+9:{analogy:{title:'a translator replying to a letter',story:'First they read the whole incoming letter at once, which is quick because they can take it all in together. Then they dictate the reply one word at a time, and each word means walking to a filing cabinet across the building to fetch the entire dictionary. The walking, not the thinking, is what makes dictation slow.'},
+ map:[['Reading the whole letter','Prefill'],['Dictating word by word','Decode'],['Fetching the dictionary every word','Reading all weights from GPU memory'],['Walking speed','Memory bandwidth'],['Time until the first word','Time to first token (TTFT)']],
+ example:{title:'how fast can a 7B model talk?',intro:'Illustrative GPU: 2 TB/s memory bandwidth, 400 TFLOP/s compute. 7B parameters in FP16.',steps:[
+  {t:'Weight size',calc:'7 B × 2 bytes = 14 GB'},
+  {t:'One decode step',calc:'14 GB ÷ 2,000 GB/s = 7 ms → at most about 140 tokens/s'},
+  {t:'Same for 70B',calc:'140 GB ÷ 2,000 GB/s = 70 ms → about 14 tokens/s'},
+  {t:'Prefill 1,000 prompt tokens on 7B',calc:'2 × 7 B × 1,000 = 14 TFLOP ÷ 400 TFLOP/s = 35 ms'},
+  {t:'A 200-token answer',calc:'35 ms + 200 × 7 ms = 1.4 s',note:'Decode dominates. Batching many users shares each walk to the cabinet.'}]},
+ distinction:'Prefill is limited by compute. Decode is limited by memory bandwidth.',
+ oneLiner:'An LLM reads your prompt in one fast parallel pass, then writes slowly, one token at a time, bottlenecked by memory.'},
+10:{analogy:{title:'taking meeting minutes',story:'Without notes, before every new remark you replay the whole recording from the start. With notes, you glance at what you wrote and add one new line. The notes cost paper, and a long enough meeting fills the notebook.'},
+ map:[['Replaying the whole recording','Recomputing K and V for every past token'],['Your notes','KV cache'],['Adding one new line','Computing K and V for the newest token only'],['Notebook pages','GPU memory']],
+ example:{title:'how much work the cache saves',intro:'Count the K/V computations needed to generate the answer.',steps:[
+  {t:'Small case',calc:'4-token prompt, 8 new tokens\nno cache: 4+5+…+11 = 60   with cache: 4 + 7 = 11'},
+  {t:'Realistic case',calc:'1,000-token prompt, 500 new tokens\nno cache: 624,750   with cache: 1,499   (about 400× less)'},
+  {t:'The memory bill',calc:'Llama 2 7B per token: 2 × 32 × 32 × 128 × 2 bytes = 0.5 MB'},
+  {t:'One long chat',calc:'4,096 tokens × 0.5 MB = 2 GB per conversation',note:'Thirty concurrent users need about 64 GB of cache, more than the 14 GB of weights.'}]},
+ distinction:'The KV cache trades memory for compute. It removes recomputation but grows with every token.',
+ oneLiner:'The KV cache remembers each token\'s keys and values so generation never redoes past work, at the cost of GPU memory.'},
+11:{analogy:{title:'seating a restaurant',story:'The old way reserves one long table per party, sized for the biggest party you might ever get. Most seats sit empty, and the gaps between tables are too small for anyone. The paged way uses small four-seat tables placed anywhere, adds a table as more guests arrive, and keeps a seating chart. Parties that order the same starter share one platter.'},
+ map:[['A long table reserved for the maximum','Contiguous max-length allocation'],['Empty reserved seats','Internal fragmentation'],['Gaps too small to use','External fragmentation'],['Four-seat tables','Fixed-size KV blocks'],['The host\'s seating chart','Block table'],['A shared starter platter','Shared prefix blocks']],
+ example:{title:'counting the waste',intro:'Three requests on a server that reserves 2,048 slots per request. Their actual lengths are 300, 900 and 150 tokens.',steps:[
+  {t:'Contiguous',calc:'reserved 3 × 2,048 = 6,144   used 1,350   → 78% wasted'},
+  {t:'Paged with 16-token blocks',calc:'⌈300/16⌉ + ⌈900/16⌉ + ⌈150/16⌉ = 19 + 57 + 10 = 86 blocks = 1,376 slots'},
+  {t:'Waste now',calc:'1,376 − 1,350 = 26 slots   → 1.9% wasted'},
+  {t:'Payoff',calc:'the same memory holds about 4.5× as many requests',note:'More requests per GPU means a lower cost per token.'}]},
+ distinction:'PagedAttention fixes wasted memory. It doesn\'t make the math itself faster.',
+ oneLiner:'PagedAttention stores the KV cache in small blocks allocated on demand, like OS virtual memory, so almost nothing is wasted.'},
+12:{analogy:{title:'a shuttle bus versus a city bus',story:'The airport shuttle won\'t take new passengers until everyone from this trip is dropped off, even when seats empty early. The city bus picks someone up at every stop where a seat frees. Same bus, same road, far more people moved.'},
+ map:[['Bus seats','Batch slots'],['How far each passenger rides','Output length'],['Waiting at the depot','Request queue'],['Shuttle that waits for the last passenger','Static batching'],['City bus refilling seats at every stop','Continuous batching']],
+ example:{title:'8 requests, 4 slots',intro:'Output lengths in decode steps: 10, 2, 3, 9, then 2, 8, 3, 4. Total work = 41 slot-steps.',steps:[
+  {t:'Static, batch 1',calc:'[10, 2, 3, 9] runs until the longest finishes → 10 steps'},
+  {t:'Static, batch 2',calc:'[2, 8, 3, 4] → 8 steps   total 18 steps'},
+  {t:'Static utilization',calc:'41 ÷ (4 × 18) = 57%'},
+  {t:'Continuous',calc:'freed slots refill immediately → all done by step 11'},
+  {t:'Continuous utilization',calc:'41 ÷ (4 × 11) = 93%',note:'Same work, 39% less time.'}]},
+ distinction:'Continuous batching raises total throughput. It doesn\'t make any single request\'s tokens come faster.',
+ oneLiner:'Continuous batching refills a slot the moment a request finishes, keeping the GPU busy and the queue short.'},
+13:{analogy:{title:'three shortcuts in an office',story:'<b>FlashAttention</b> is doing the sums on a whiteboard at your desk instead of walking to the archive room after every line. <b>Quantization</b> is saving photos as JPEGs: slightly less detail, far smaller files. <b>Speculative decoding</b> is a junior drafting the next few sentences and a senior editor approving them in one read, fixing the first mistake.'},
+ map:[['Whiteboard at your desk','Fast on-chip SRAM (FlashAttention tiles)'],['Walking to the archive room','Reading and writing slow HBM'],['Saving as JPEG','Quantizing weights to INT8 or INT4'],['Junior drafts, senior approves','Draft model plus verifier']],
+ example:{title:'quantizing four weights to INT4',intro:'Weights [0.82, −0.41, 0.07, −1.20]. INT4 stores whole numbers from −8 to 7.',steps:[
+  {t:'Pick a scale',calc:'largest |w| = 1.20   scale = 1.20 ÷ 7 = 0.171'},
+  {t:'Round',calc:'w ÷ scale = [4.78, −2.39, 0.41, −7.00] → [5, −2, 0, −7]'},
+  {t:'Read back',calc:'× 0.171 → [0.857, −0.343, 0.000, −1.200]'},
+  {t:'Error',calc:'[0.037, 0.067, 0.070, 0.000]',note:'Small errors on each weight, a quarter of the memory of FP16.'},
+  {t:'Speculative round',calc:'draft guesses 4 tokens, big model accepts 3 and fixes the 4th\n→ 4 tokens from 1 slow pass instead of 4'}]},
+ distinction:'FlashAttention and speculative decoding keep the output identical. Quantization trades a little precision for memory and speed.',
+ oneLiner:'Serve faster by moving less data, storing smaller numbers, and letting a cheap model draft for an expensive one.'},
+14:{analogy:{title:'a hospital with a triage nurse',story:'The hospital employs eight specialists. A triage nurse sends each patient to the two most relevant ones, not all eight. Each visit is quick and cheap, but the hospital still pays every specialist\'s salary. If everyone gets sent to cardiology, the queue there explodes.'},
+ map:[['Patients','Tokens'],['Specialists','Experts'],['Triage nurse','Router'],['Seeing two specialists','Top-2 routing'],['Payroll for all doctors','Total parameters in memory'],['Doctors you actually see','Active parameters'],['Overloaded cardiology','Load imbalance']],
+ example:{title:'routing one token',intro:'Router scores for four experts: [2.0, 1.0, 0.5, −1.0]. Top-2 routing.',steps:[
+  {t:'Softmax',calc:'→ [0.609, 0.224, 0.136, 0.030]'},
+  {t:'Keep the top 2',calc:'experts 1 and 2   renormalize: 0.609 ÷ 0.833 = 0.731, 0.269'},
+  {t:'Combine',calc:'output = 0.731 × Expert1(x) + 0.269 × Expert2(x)',note:'Experts 3 and 4 do no work for this token.'},
+  {t:'Mixtral-like sizes',calc:'total = 1.6 B shared + 8 × 5.6 B ≈ 47 B\nactive = 1.6 B + 2 × 5.6 B ≈ 13 B',note:'Compute of a 13B model, memory of a 47B model.'}]},
+ distinction:'Mixture of experts saves compute per token. It does not save memory.',
+ oneLiner:'MoE models route each token to a few experts, giving big-model capacity at small-model compute.'},
+28:{analogy:{title:'running a restaurant chain',story:'Several chefs can cook one huge dish together, each handling part of it, but they must talk constantly (<b>tensor parallelism</b>). An assembly line passes the dish from station to station (<b>pipeline parallelism</b>). Opening more identical restaurants serves more customers (<b>replicas</b>). Complaints come from the slowest 1 in 100 customers (<b>p99 latency</b>), and as the kitchen nears full capacity, queues grow very fast.'},
+ map:[['Chefs cooking one dish together','Tensor parallelism inside one server'],['Assembly-line stations','Pipeline parallelism across servers'],['More identical restaurants','Replicas (data parallelism)'],['The slowest 1 in 100 customers','p99 latency'],['A kitchen near full capacity','High utilization, long queues']],
+ example:{title:'sizing a 70B deployment',intro:'Llama 3 70B in FP16, 8K-token contexts, 16 concurrent requests, 80 GB GPUs.',steps:[
+  {t:'Weights',calc:'70 B × 2 bytes = 140 GB'},
+  {t:'KV cache',calc:'320 KB/token × 8,192 tokens × 16 requests ≈ 43 GB'},
+  {t:'Total with ~10% overhead',calc:'≈ 200 GB → 3 GPUs minimum → use 4 (tensor parallelism works in powers of 2)'},
+  {t:'Why not run at 95% load?',calc:'average time ≈ service time ÷ (1 − load)\n50% load: 2× service time   90%: 10×   95%: 20×',note:'Leave headroom, or the tail latency explodes.'}]},
+ distinction:'Throughput is tokens per second across everyone. Latency is how long one user waits. Optimizing one often hurts the other.',
+ oneLiner:'Serving at scale means splitting big models across GPUs, keeping utilization high but not maxed, and watching p99, not the average.'},
+15:{analogy:{title:'briefing a brilliant contractor',story:'They are excellent but know nothing about your company. A vague brief gets generic work. A clear brief with the goal, the deliverable format and a couple of past examples gets great work. In a two-hour briefing, people remember the opening and the closing, and the middle blurs.'},
+ map:[['The contractor','The model'],['Your written brief','The prompt'],['Standing company rules','System prompt'],['Examples of past deliverables','Few-shot examples'],['"Show your working"','Chain of thought'],['Length of the briefing','Context window'],['The middle of a long briefing blurs','Lost in the middle']],
+ example:{title:'improving one prompt',intro:'Ticket: "My Aurora X2 headphones stopped charging. Third time contacting you."',steps:[
+  {t:'Bare request',calc:'"Classify this ticket."\n→ "The customer seems unhappy about headphones…"'},
+  {t:'Say what you want',calc:'+ "Give sentiment, product and urgency."\n→ "Negative. Headphones. Medium."'},
+  {t:'Fix the format',calc:'+ "Return only JSON."\n→ {"sentiment":"negative","product":"Aurora X2","urgency":"medium"}'},
+  {t:'Teach the edge case',calc:'+ two examples, one showing that repeat contacts mean high urgency\n→ {"sentiment":"negative","product":"Aurora X2","urgency":"high"}',note:'Each line of the brief fixed one specific failure.'}]},
+ distinction:'The prompt is everything the model knows for this request. If it isn\'t in the context, it doesn\'t exist.',
+ oneLiner:'Prompting is writing a precise brief: role, task, format and examples, with the key facts where the model will notice them.'},
+16:{analogy:{title:'an open-book exam',story:'Closed book, a student answers from memory and sometimes confidently invents. Open book, they find the relevant pages, bookmark the best few, and answer while citing page numbers. If the answer isn\'t in the book, a good student says so.'},
+ map:[['The textbook','Your documents'],['The index at the back','Vector index'],['Finding relevant pages','Similarity search'],['Bookmarking the best three','Top-k retrieval'],['Citing page numbers','Citations'],['"It\'s not in the book"','Saying "I don\'t know"']],
+ example:{title:'one question through the pipeline',intro:'Question: "What is the hotel limit in London?" Source: an 8-chunk travel policy.',steps:[
+  {t:'Embed the question',calc:'question → vector'},
+  {t:'Score every chunk',calc:'chunk 3 (hotel limits) 0.44   chunk 4 (meals) 0.28   others ≈ 0'},
+  {t:'Build the prompt',calc:'"Answer only from the sources below. Cite them.\n[1] …£200 in London…   [2] …"'},
+  {t:'Generate',calc:'→ "The nightly limit in London is £200 [1]."',note:'If retrieval had missed chunk 3, no model could answer correctly.'}]},
+ distinction:'Retrieval quality caps answer quality. Measure retrieval separately from generation.',
+ oneLiner:'RAG looks up the right passages at question time and has the model answer from them, with citations.'},
+27:{analogy:{title:'finding the nearest coffee shop',story:'Brute force measures the distance to every coffee shop in the country. IVF only checks your neighborhood and a few next door. HNSW asks locals for directions hop by hop, using highways first and then side streets. Both shortcuts are far faster and occasionally miss the true nearest shop.'},
+ map:[['Every shop in the country','Every vector (exact search)'],['Neighborhoods','IVF clusters'],['How many neighborhoods to check','nprobe'],['Locals pointing you closer','Graph edges'],['Highways, then side streets','HNSW layers'],['Occasionally missing the closest shop','Recall below 100%']],
+ example:{title:'searching 10 million vectors',intro:'10 M document chunks, 1,024-dimension embeddings.',steps:[
+  {t:'Brute force',calc:'10 M distances × 1,024 dims ≈ 10 billion multiply-adds per query'},
+  {t:'IVF',calc:'4,096 clusters, probe 16 → scan about 0.4% of vectors (≈ 39 K)'},
+  {t:'HNSW',calc:'typically a few thousand distance computations, often 95% to 99% recall'},
+  {t:'Memory',calc:'10 M × 1,024 × 4 bytes ≈ 41 GB in float32, about 10 GB in int8',note:'Index memory often decides the hardware, not the search speed.'}]},
+ distinction:'Approximate nearest-neighbor search trades a little recall for a huge speed-up.',
+ oneLiner:'Vector databases skip most of the data using clusters or graphs, finding nearly the best matches in milliseconds.'},
+17:{analogy:{title:'a librarian and a card catalog',story:'The card catalog finds exact titles and codes instantly but misses books worded differently. The librarian understands what you mean but may blur exact codes. Ask both and merge the lists (<b>hybrid search</b>). The librarian may also rephrase your vague question first (<b>query rewriting</b>). An expert then skims the first pages of the top 20 books (<b>re-ranking</b>).'},
+ map:[['The card catalog','Keyword search (BM25)'],['The librarian who gets your meaning','Vector search'],['Asking both and merging','Hybrid search with rank fusion'],['Rephrasing your question','Query rewriting'],['Expert skimming the top 20','Re-ranker'],['A map of who knows whom','GraphRAG']],
+ example:{title:'reciprocal rank fusion by hand',intro:'Score = 1 ÷ (60 + rank), summed across lists.',steps:[
+  {t:'Document A',calc:'rank 1 in keyword, rank 3 in vector → 1/61 + 1/63 = 0.0323'},
+  {t:'Document B',calc:'rank 2 in keyword, not in vector → 1/62 = 0.0161'},
+  {t:'Document C',calc:'not in keyword, rank 1 in vector → 1/61 = 0.0164'},
+  {t:'Fused order',calc:'A, C, B',note:'Being found by both methods beats being first in only one.'}]},
+ distinction:'Recall@k measures retrieval: did the right chunks arrive? Faithfulness measures generation: is every claim supported by them?',
+ oneLiner:'Advanced RAG combines keyword and vector search, rewrites queries, re-ranks results, and measures each stage separately.'},
+18:{analogy:{title:'a manager and an assistant',story:'The manager can\'t use the phone, so they write a request slip: "Call the weather service for Hyderabad, tomorrow." The assistant checks the slip makes sense, makes the call, and brings back a note with the forecast. The manager reads it and writes the final memo.'},
+ map:[['The manager','The model'],['The phone directory of allowed calls','Tool definitions'],['A request slip','Tool call (JSON)'],['The assistant','Your application code'],['The note brought back','Tool result'],['The final memo','Final answer']],
+ example:{title:'the four messages',intro:'User: "Should I take an umbrella in Hyderabad tomorrow?"',steps:[
+  {t:'Model asks',calc:'{"type":"tool_use","name":"get_weather","input":{"location":"Hyderabad","date":"tomorrow"}}'},
+  {t:'Your code runs it',calc:'getWeather("Hyderabad","tomorrow") → {"forecast":"thunderstorms","chance_of_rain":0.7}'},
+  {t:'Result goes back',calc:'{"type":"tool_result","tool_use_id":"call_01","content":"…0.7…"}'},
+  {t:'Model answers',calc:'"Yes, take one: 70% chance of thunderstorms."',note:'The model never touched the weather API. Your code did.'}]},
+ distinction:'The model only requests an action. Your code decides whether to run it and does the running.',
+ oneLiner:'Tool use lets a model ask your code to do things, then read the results and keep going.'},
+19:{analogy:{title:'a detective working a case',story:'The detective looks at the clues, forms a hunch, interviews a witness, writes down what they learned, and repeats. Their notebook holds the current case. The archive holds past cases. They stop when the case is solved, when the budget runs out, or when a decision needs the chief.'},
+ map:[['A hunch','Thought'],['Interviewing a witness','Action (tool call)'],['What the witness said','Observation'],['The notebook','Context window (short-term memory)'],['The case archive','Long-term memory store'],['Case closed or escalate','Stopping conditions']],
+ example:{title:'four turns of the loop',intro:'Task: find which service had the most errors yesterday and open a ticket.',steps:[
+  {t:'Turn 1',calc:'Thought: get counts per service\nAction: get_error_count(checkout) → 412   context ≈ 1,050 tokens'},
+  {t:'Turn 2',calc:'Action: get_error_count(search) → 1,287   context ≈ 1,190'},
+  {t:'Turn 3',calc:'Action: get_error_count(payments) → 96   context ≈ 1,330'},
+  {t:'Turn 4',calc:'Thought: search is worst\nAction: create_ticket(search, high) → INC-20418   then stop: goal met',note:'Nobody coded the order of these steps. The model chose each one from what it had seen so far.'}]},
+ distinction:'In a workflow, your code fixes the steps. In an agent, the model chooses the next step.',
+ oneLiner:'An agent is a model that uses tools in a loop until it reaches its goal or hits a limit.'},
+20:{analogy:{title:'USB-C for AI',story:'Before a common plug, every device needed its own cable for every kind of port. With one standard, any device works with any accessory. MCP does that for AI apps and the tools and data they connect to.'},
+ map:[['Laptops and phones','AI apps (hosts)'],['The port inside the laptop','MCP client'],['Accessories such as drives and monitors','MCP servers'],['What an accessory can do','Tools, resources and prompts'],['The plug standard','The protocol (JSON-RPC)']],
+ example:{title:'the integration math',intro:'5 AI apps that each need 8 internal services.',steps:[
+  {t:'Without a standard',calc:'5 × 8 = 40 custom integrations'},
+  {t:'With MCP',calc:'5 clients + 8 servers = 13 pieces'},
+  {t:'At about 2 weeks each',calc:'80 engineer-weeks → 26 engineer-weeks',note:'Each new app or service now adds one piece, not a whole row or column.'}]},
+ distinction:'Function calling is how a model asks for a tool inside one API. MCP standardizes how any app discovers and calls tools.',
+ oneLiner:'MCP is a standard plug between AI apps and tools, so each integration is built once and reused everywhere.'},
+21:{analogy:{title:'a solo researcher versus a team',story:'A solo researcher writes all four chapters one after another. A team lead splits the report, gives each researcher a short brief, lets them work in parallel, then merges the results. The team finishes sooner but bills more total hours, because everyone reads the brief and some searching overlaps. If chapter 2 needs chapter 1\'s findings, they wait in line and the team gains nothing.'},
+ map:[['The team lead','Orchestrator agent'],['Researchers','Worker agents'],['The brief','Task description and context'],['Total hours billed','Total tokens'],['Calendar time','Wall-clock latency'],['Chapters that depend on each other','Dependent subtasks']],
+ example:{title:'four subtasks, two designs',intro:'From this module\'s simulation.',steps:[
+  {t:'Single agent',calc:'175 s   ≈ 98 K tokens'},
+  {t:'Orchestrator and 4 parallel workers',calc:'95 s   ≈ 173 K tokens   (1.8× the tokens)'},
+  {t:'Same team, dependent subtasks',calc:'275 s   ≈ 191 K tokens',note:'Slower and more expensive than one agent. Parallelism only pays when the work is independent.'}]},
+ distinction:'Multiple agents buy speed and focused contexts with extra tokens.',
+ oneLiner:'Split work across agents when subtasks are broad and independent; keep one agent when they are tightly linked.'},
+22:{analogy:{title:'driving tests and forged notes',story:'An eval suite is a driving test on a fixed route that you rerun after every change to the car. Prompt injection is a forged note slipped into the paperwork: "Also wire money to this account." The defenses are a clerk trained to ignore instructions inside documents, a mailroom scanner, and a manager who must sign off on every wire transfer.'},
+ map:[['The fixed test route','Eval set'],['Rerunning after every change','Regression testing in CI'],['A forged note in the paperwork','Indirect prompt injection'],['Clerk ignores orders inside documents','Marking retrieved content as untrusted'],['Mailroom scanner','Injection classifier'],['Manager signs off on wires','Human approval for risky tools']],
+ example:{title:'reading eval results',intro:'200 test cases, comparing prompt v1 and v2.',steps:[
+  {t:'v1',calc:'162 of 200 pass = 81%'},
+  {t:'v2',calc:'175 of 200 pass = 87.5%'},
+  {t:'Look closer',calc:'16 newly passing, 3 that used to pass now fail',note:'Read the 3 regressions before shipping. Averages hide them.'},
+  {t:'Trust the judge?',calc:'LLM judge agrees with human graders on 92 of 100 → 92%',note:'Good enough to automate, with spot checks.'}]},
+ distinction:'A jailbreak is a user trying to break the model\'s rules. Prompt injection is third-party content hijacking your app.',
+ oneLiner:'Measure with your own evals on every change, and assume anything the model reads could be an attack.'},
+29:{analogy:{title:'an airport serving many airlines',story:'Fifteen airlines share one runway, one security checkpoint and one baggage system. Air traffic control assigns slots, routes short hops to small planes, and logs every flight, so no airline has to build its own airport.'},
+ map:[['Airlines','Product teams'],['Air traffic control','LLM gateway'],['Runway slots','Rate limits and quotas'],['Security screening','Guardrails'],['Small planes for short hops','Routing simple requests to cheaper models'],['Flight logs','Observability and cost tracking']],
+ example:{title:'back-of-envelope capacity',intro:'15 teams, 2 M requests a day, 3,000 input and 400 output tokens each. Illustrative prices: $3 per M input, $15 per M output.',steps:[
+  {t:'Traffic',calc:'2 M ÷ 86,400 s ≈ 23 requests/s average   ≈ 70/s at a 3× peak'},
+  {t:'Tokens',calc:'6 B input + 0.8 B output per day'},
+  {t:'Cost',calc:'6,000 × $3 + 800 × $15 = $18,000 + $12,000 = $30,000/day'},
+  {t:'Add prompt caching',calc:'40% of input cached at 10% of the price → input $11,520\nnew total ≈ $23,500/day (−22%)',note:'Say the assumption out loud, then show how each lever moves the number. That is what interviewers look for.'}]},
+ distinction:'Design interviews reward clear trade-offs and rough numbers more than a perfect diagram.',
+ oneLiner:'Start from requirements and numbers, then design the components, failure modes and evals that meet them.'}
+};
+for(const n in STICK){ if(MODULES[n]) MODULES[n].stick=STICK[n]; }
+
+function stickHtml(s){
+  if(!s) return '';
+  const a=s.analogy;
+  return `<section class="stick" aria-labelledby="stick-h">
+    <h2 id="stick-h">Make it stick</h2>
+    <div class="stick-card"><h3>Think of it like ${a.title}</h3><p>${a.story}</p>${a.steps?`<ol class="stick-steps">${a.steps.map(x=>`<li>${x}</li>`).join('')}</ol>`:''}${a.after?`<p>${a.after}</p>`:''}
+      <div class="scroll-x"><table class="maptbl"><thead><tr><th>In the analogy</th><th>In AI</th></tr></thead><tbody>${s.map.map(([x,y])=>`<tr><td>${x}</td><td><b>${y}</b></td></tr>`).join('')}</tbody></table></div></div>
+    <div class="stick-card worked"><h3>Worked example: ${s.example.title}</h3><p>${s.example.intro}</p>
+      <ol class="wsteps" data-ws></ol>
+      <div class="row"><button class="btn" data-wnext>Take next step</button><button class="btn-ghost" data-wreset>Reset</button><span class="muted num" data-wpos style="margin-left:auto"></span></div></div>
+    ${(s.extra||[]).map(([h,t])=>`<div class="stick-card"><h3>${h}</h3><p>${t}</p></div>`).join('')}
+    ${s.real?`<div class="stick-card"><h3>How this shows up in a real LLM</h3><p>${s.real}</p></div>`:''}
+    <p class="stick-key"><b>Key distinction:</b> ${s.distinction}</p>
+    <p class="stick-one"><b>In one sentence:</b> ${s.oneLiner}</p>
+  </section>`;
+}
+function wireStick(root, s){
+  if(!s) return;
+  const list=$('[data-ws]',root), steps=s.example.steps, mx=s.example.bar?Math.max(...steps.map(x=>x.bar||0)):0; let k=1;
+  const draw=()=>{
+    list.innerHTML=steps.slice(0,k).map((st,i)=>`<li class="${i===k-1?'now':''}"><b>${esc(st.t)}</b><pre class="wcalc">${esc(st.calc)}</pre>${s.example.bar&&st.bar!==undefined?`<div class="wbar"><span style="width:${Math.max(1,st.bar/mx*100).toFixed(1)}%"></span><small class="num">${esc(s.example.bar)}: ${st.bar}</small></div>`:''}${st.note?`<p>${st.note}</p>`:''}</li>`).join('');
+    $('[data-wpos]',root).textContent=`Step ${k} of ${steps.length}`;
+    $('[data-wnext]',root).disabled=k>=steps.length;
+  };
+  $('[data-wnext]',root).onclick=()=>{ if(k<steps.length){k++;draw()} };
+  $('[data-wreset]',root).onclick=()=>{ k=1; draw(); };
+  draw();
+}
 /* ===== Interview prep for modules 1 to 22 (modules 23+ carry their own) ===== */
 const IV = {
 1:{explain:'AI is the umbrella: any system doing something we would call smart, including hand-written rules and search. Machine learning is the subset that learns rules from data instead of having them coded. Deep learning is ML with many-layer neural networks, which works on raw images, audio and text. Generative AI is deep learning that produces new content, and LLMs sit there. In practice the key skill is picking the cheapest tool that works: a rule if the logic is known, classic ML for labels and numbers, an LLM for open-ended language.',
